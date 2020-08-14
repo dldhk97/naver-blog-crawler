@@ -86,7 +86,19 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
                         get_real_blog_post_content_soup = BeautifulSoup(get_real_blog_post_content_text, 'lxml')
 
-                        for blog_post_content in get_real_blog_post_content_soup.select('div#postViewArea'):
+                        # 파싱이 제대로 됬는지 확인
+                        isSuccessfulParse = False
+
+                        # 2년 전에는 태그ID가 postViewArea인 div 내에 컨텐츠가 있었는데, 
+                        # 현재는 태그ID가 post-view + logNo 조합인 div 안에 컨텐츠가 있음.
+                        contentTagID = 'div#postViewArea'
+                        for s in real_blog_post_url.split('&'):
+                            if s.startswith('logNo'):
+                                contentTagID = 'div#post-view' + s.split('=')[1]
+                                break
+                        
+                        print('contentTagID : ' + contentTagID)
+                        for blog_post_content in get_real_blog_post_content_soup.select(contentTagID):
                             blog_post_content_text = blog_post_content.get_text()
 
                             remove_html_tag = re.compile('<.*?>')
@@ -99,12 +111,22 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                             blog_post_blogger_name = response_body_dict['items'][j]['bloggername']
                             blog_post_full_contents = str(blog_post_content_text)
 
+                            # 개행문자 정리함. '\n ' -> '\n'
+                            blog_post_full_contents = re.sub("(\\n )" , "\n", blog_post_full_contents)
+                            # 개행문자 정리 2 '\n' 2번이상 반복 -> '\n'
+                            blog_post_full_contents = re.sub("(\\n){2,}" , "\n", blog_post_full_contents)
+                            # 개행문자 정리 3 ' ' 2번이상 반복 -> ' '
+                            blog_post_full_contents = re.sub("( ){2,}" , " ", blog_post_full_contents)
+
                             print("포스팅 URL : " + blog_post_url)
                             print("포스팅 제목 : " + blog_post_title)
                             print("포스팅 설명 : " + blog_post_description)
                             print("포스팅 날짜 : " + blog_post_postdate)
                             print("블로거 이름 : " + blog_post_blogger_name)
                             print("포스팅 내용 : " + blog_post_full_contents)
+
+                            isSuccessfulParse = True
+                        print(str(isSuccessfulParse) + " | " + real_blog_post_url)
                 except Exception as e:
                     print(e)
                     j += 1
