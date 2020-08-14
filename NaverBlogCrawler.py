@@ -7,9 +7,10 @@ import urllib.request
 import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
+from constants import NaverAPI
 
-naver_client_id = "INPUT YOUR CLIENT ID"
-naver_client_secret = "INPUT YOUR CLIENT SECRET"
+naver_client_id = NaverAPI.NAVER_CLIENT_ID
+naver_client_secret = NaverAPI.NAVER_CLIENT_SECRET
 
 
 def naver_blog_crawling(search_blog_keyword, display_count, sort_type):
@@ -77,7 +78,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
                     get_blog_post_content_soup = BeautifulSoup(get_blog_post_content_text, 'lxml')
 
-                    for link in get_blog_post_content_soup.select('frame#mainFrame'):
+                    for link in get_blog_post_content_soup.select('iframe#mainFrame'):          # 2년 전에는 mainFrame의 태그가 frame이었는듯, 현재 iframe으로 변경됨.
                         real_blog_post_url = "http://blog.naver.com" + link.get('src')
 
                         get_real_blog_post_content_code = requests.get(real_blog_post_url)
@@ -104,9 +105,6 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                             print("포스팅 날짜 : " + blog_post_postdate)
                             print("블로거 이름 : " + blog_post_blogger_name)
                             print("포스팅 내용 : " + blog_post_full_contents)
-                except:
+                except Exception as e:
+                    print(e)
                     j += 1
-
-
-if __name__ == '__main__':
-    naver_blog_crawling("파이썬 컨벤션", 100, "sim")
