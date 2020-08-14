@@ -49,6 +49,54 @@ def get_blog_search_result_pagination_count(search_blog_keyword, display_count):
 
         return blog_pagination_count
 
+def get_img_src(node):
+    if node.has_attr('data-lazy-src'):
+        return node['data-lazy-src']
+    elif node.has_attr('src'):
+        return node['src']
+    return 'Image parse failed!'
+
+# 게시글 타입별 본문 지정. 본문만 선택할 수 있으면 본문 노드 반환.
+def get_main_content(content):
+    main = content.select('div.se-main-container')
+    if main:
+        main = main[0]
+    else:
+        main = content.select('div.__se_component_area')
+        if main:
+            main = main[0]
+        else:
+            main = content
+    return main
+
+def get_texts(content):
+    result = str(content.get_text())
+
+    # 개행문자 정리함. '\n ' -> '\n'
+    result = re.sub("(\\n )" , "\n", result)
+    # 개행문자 정리 2 '\n' 2번이상 반복 -> '\n'
+    result = re.sub("(\\n){2,}" , "\n", result)
+    # 개행문자 정리 3 ' ' 2번이상 반복 -> ' '
+    result = re.sub("( ){2,}" , " ", result)
+
+    return result
+
+def get_images(content):
+    result = []
+    for node in content.find_all('img'):
+        result.append(node)
+    return result
+
+def get_hrefs(content):
+    result = []
+    for node in content.find_all('a', href=True):
+        if node['href'] != '#':
+            result.append(node)
+    return result
+
+def get_videos(content):
+    # 영상 추출하게 해라!
+    return ''
 
 def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type):
     encode_search_blog_keyword = urllib.parse.quote(search_blog_keyword)
@@ -86,20 +134,21 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
                         get_real_blog_post_content_soup = BeautifulSoup(get_real_blog_post_content_text, 'lxml')
 
-                        # 파싱이 제대로 됬는지 확인
-                        isSuccessfulParse = False
-
                         # 2년 전에는 태그ID가 postViewArea인 div 내에 컨텐츠가 있었는데, 
                         # 현재는 태그ID가 post-view + logNo 조합인 div 안에 컨텐츠가 있음.
                         contentTagID = 'div#postViewArea'
+                        logNo = 'div#postViewArea'
                         for s in real_blog_post_url.split('&'):
                             if s.startswith('logNo'):
-                                contentTagID = 'div#post-view' + s.split('=')[1]
+                                logNo = s.split('=')[1]
                                 break
                         
-                        print('contentTagID : ' + contentTagID)
+                        contentTagID = 'div#post-view' + logNo
+
+                        print('Debug:url : ' + blog_post_url)
+
                         for blog_post_content in get_real_blog_post_content_soup.select(contentTagID):
-                            blog_post_content_text = blog_post_content.get_text()
+                            main_content = get_main_content(blog_post_content)
 
                             remove_html_tag = re.compile('<.*?>')
 
@@ -109,24 +158,37 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                             blog_post_postdate = datetime.datetime.strptime(response_body_dict['items'][j]['postdate'],
                                                                             "%Y%m%d").strftime("%y.%m.%d")
                             blog_post_blogger_name = response_body_dict['items'][j]['bloggername']
-                            blog_post_full_contents = str(blog_post_content_text)
+                            blog_post_full_contents = get_texts(main_content)
 
-                            # 개행문자 정리함. '\n ' -> '\n'
-                            blog_post_full_contents = re.sub("(\\n )" , "\n", blog_post_full_contents)
-                            # 개행문자 정리 2 '\n' 2번이상 반복 -> '\n'
-                            blog_post_full_contents = re.sub("(\\n){2,}" , "\n", blog_post_full_contents)
-                            # 개행문자 정리 3 ' ' 2번이상 반복 -> ' '
-                            blog_post_full_contents = re.sub("( ){2,}" , " ", blog_post_full_contents)
+                            # 이미지 목록 추출
+                            images = get_images(main_content)
+
+                            # 하이퍼링크 목록 추출
+                            hrefs = get_hrefs(main_content)
+
+                            # 비디오 목록 추출(미완성)
+                            videos = get_videos(main_content)
 
                             print("포스팅 URL : " + blog_post_url)
                             print("포스팅 제목 : " + blog_post_title)
                             print("포스팅 설명 : " + blog_post_description)
                             print("포스팅 날짜 : " + blog_post_postdate)
                             print("블로거 이름 : " + blog_post_blogger_name)
-                            print("포스팅 내용 : " + blog_post_full_contents)
 
-                            isSuccessfulParse = True
-                        print(str(isSuccessfulParse) + " | " + real_blog_post_url)
+                            if images:
+                                print("이미지 목록 : ")
+                                for image in images:
+                                    print(get_img_src(image))
+
+                            if hrefs:
+                                print("하이퍼링크 목록 : ")
+                                for href in hrefs:
+                                    print(href['href'])
+
+                            print("포스팅 내용 : " + blog_post_full_contents)
+                            print("-----------------------------------------------------------------------------------")
                 except Exception as e:
                     print(e)
                     j += 1
+
+    
