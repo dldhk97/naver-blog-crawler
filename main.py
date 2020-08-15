@@ -31,8 +31,13 @@ def save_as_csv(search_word, article_list):
         wr = csv.writer(f)
         for article in article_list:
             try:
-                renew_body = article._body.replace('\n','') # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
-                wr.writerow([article._blogId, article._logNo, article._url, article._title, renew_body])
+                renew_body = article._body.replace('\n',' ') # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
+                image_count = len(article._images)
+                hyperlink_count = len(article._hyperlinks)
+                video_count = len(article._videos)
+
+                wr.writerow([article._blogId, article._logNo, article._url, article._title, renew_body, image_count, hyperlink_count, video_count])
+                
                 print(article._url + ' 저장 완료')
             except Exception as ex:
                 print(ex)
@@ -46,5 +51,6 @@ def save_as_csv(search_word, article_list):
     
 
 if __name__ == '__main__':
-    parse_and_save("자기소개서 예시", 5)
-    parse_and_save("다운로드", 5)
+    parse_and_save("자기소개서 예시", 80)
+    parse_and_save("다운로드", 80)
+    parse_and_save("립버전", 80)

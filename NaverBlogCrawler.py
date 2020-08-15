@@ -210,7 +210,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                                 article_list.append(currentArticle)
 
                                 # print(currentArticle)
-                                print(blog_post_url + ' 파싱완료')
+                                print(blog_post_url + ' 파싱완료 (' + str(j) + '/' + str(max_count) + ')')
                     else:
                         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
                 except Exception as e:
