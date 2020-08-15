@@ -20,7 +20,9 @@ class Article:
         self._body = body
 
     def __str__(self):
-        s = "포스팅 URL : " + self._url + "\n"
+        s = "Blog ID : " + self._blogId + "\n"
+        s += "logNo : " + self._logNo + "\n"
+        s += "포스팅 URL : " + self._url + "\n"
         s += "포스팅 제목 : " + self._title + "\n"
         s += "포스팅 설명 : " + self._description + "\n"
         s += "포스팅 날짜 : " + self._date + "\n"
@@ -42,4 +44,28 @@ class Article:
                 s += video + "\n"
 
         s += "포스팅 내용 : " + self._body
+        return s
+    
+    def toCsvStyle(self):
+        s = self._blogId + "\t"
+        s += self._logNo + "\t"
+        s += self._url + "\t"
+        s += self._title + "\t"
+        s += self._description + "\t"
+        s += self._date + "\t"
+        s += self._blogName + "\t"
+
+        if self._images:
+            for image in self._images:
+                 s += image + "\n"
+        s += '\t'
+        if self._hyperlinks:
+            for hyperlink in self._hyperlinks:
+                s += hyperlink + "\n"
+        s += '\t'
+        if self._videos:
+            for video in self._videos:
+                s += video + "\n"
+        s += '\t'
+        s += self._body
         return s

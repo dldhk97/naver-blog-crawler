@@ -14,9 +14,9 @@ naver_client_id = NaverAPI.NAVER_CLIENT_ID
 naver_client_secret = NaverAPI.NAVER_CLIENT_SECRET
 
 
-def naver_blog_crawling(search_blog_keyword, display_count, sort_type):
+def naver_blog_crawling(search_blog_keyword, display_count, sort_type, max_count=None):
     search_result_blog_page_count = get_blog_search_result_pagination_count(search_blog_keyword, display_count)
-    get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type)
+    return get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type, max_count)
 
 
 def get_blog_search_result_pagination_count(search_blog_keyword, display_count):
@@ -135,7 +135,7 @@ def get_videos(content):
             result.append(src)
     return result
 
-def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type):
+def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type, max_count=None):
     encode_search_blog_keyword = urllib.parse.quote(search_blog_keyword)
 
     for i in range(1, search_result_blog_page_count + 1):
@@ -156,7 +156,10 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
             article_list = []
 
-            for j in range(0, len(response_body_dict['items'])):
+            if max_count is None:
+                max_count = len(response_body_dict['items'])
+
+            for j in range(1, max_count + 1):
                 try:
                     blog_post_url = response_body_dict['items'][j]['link'].replace("amp;", "")
 
@@ -211,7 +214,8 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                     else:
                         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
                 except Exception as e:
-                    print('파싱 도중 에러발생 : \n' + str(e))
+                    print('파싱 도중 에러발생 : ')
+                    print(e)
                     j += 1
             
             # 파싱 완료 시 게시물 목록이 있으면 반환
