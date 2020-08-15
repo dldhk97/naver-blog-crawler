@@ -10,6 +10,10 @@
 $ pip install beautifulsoup4
 $ pip install requests
 $ pip install lxml
+
+혹은
+
+$ pip install -r requirements.txt
 ```
 
 ## 기본 설정
