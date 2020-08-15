@@ -94,30 +94,45 @@ def get_entire_body(content):
 
     return result
 
+# 노드에 data-lazy-src가 있으면 반환, 없으면 src를 반환
+def get_img_src(node):
+    if node.has_attr('data-lazy-src'):
+        return node['data-lazy-src']
+    elif node.has_attr('src'):
+        return node['src']
+    return 'Image parse failed!'
+
+# 이미지 src 목록을 반환
 def get_images(content):
     result = []
     for node in content.find_all('img'):
-        result.append(node)
+        src = get_img_src(node)
+        result.append(src)
     return result
 
+# 하이퍼링크 목록을 반환
 def get_hyperlinks(content):
     result = []
     for node in content.find_all('a', href=True):
         if node['href'] != '#':
-            result.append(node)
+            hyperlink = node['href']
+            result.append(hyperlink)
     return result
+
 
 def get_videos(content):
     # 유튜브 추출
     result = []
     for node in content.find_all('iframe'):
         if 'www.youtube.com' in node['src']:
-            result.append(node)
+            src = node['src']
+            result.append(src)
 
     # 네이버 TV or 비디오 추출
     for node in content.find_all('video'):
         if node['src']:
-            result.append(node)
+            src = node['src']
+            result.append(src)
     return result
 
 def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type):

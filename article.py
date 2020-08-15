@@ -19,13 +19,6 @@ class Article:
         self._videos = videos
         self._body = body
 
-    def get_img_src(self, node):
-        if node.has_attr('data-lazy-src'):
-            return node['data-lazy-src']
-        elif node.has_attr('src'):
-            return node['src']
-        return 'Image parse failed!'
-
     def __str__(self):
         s = "포스팅 URL : " + self._url + "\n"
         s += "포스팅 제목 : " + self._title + "\n"
@@ -36,17 +29,17 @@ class Article:
         if self._images:
             s += "이미지 목록 : "
             for image in self._images:
-                 s += self.get_img_src(image) + "\n"
+                 s += image + "\n"
 
         if self._hyperlinks:
             s += "하이퍼링크 목록 : "
             for hyperlink in self._hyperlinks:
-                s += hyperlink['href'] + "\n"
+                s += hyperlink + "\n"
 
         if self._videos:
             s += "비디오 목록 : "
             for video in self._videos:
-                s += video['src'] + "\n"
+                s += video + "\n"
 
         s += "포스팅 내용 : " + self._body
         return s
