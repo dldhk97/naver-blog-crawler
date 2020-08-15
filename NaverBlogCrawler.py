@@ -95,8 +95,17 @@ def get_hrefs(content):
     return result
 
 def get_videos(content):
-    # 영상 추출하게 해라!
-    return ''
+    # 유튜브 추출
+    result = []
+    for node in content.find_all('iframe'):
+        if 'www.youtube.com' in node['src']:
+            result.append(node)
+
+    # 네이버 TV or 비디오 추출
+    for node in content.find_all('video'):
+        if node['src']:
+            result.append(node)
+    return result
 
 def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, sort_type):
     encode_search_blog_keyword = urllib.parse.quote(search_blog_keyword)
@@ -184,6 +193,11 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                                 print("하이퍼링크 목록 : ")
                                 for href in hrefs:
                                     print(href['href'])
+
+                            if videos:
+                                print("비디오 목록 : ")
+                                for video in videos:
+                                    print(video['src'])
 
                             print("포스팅 내용 : " + blog_post_full_contents)
                             print("-----------------------------------------------------------------------------------")
