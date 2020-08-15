@@ -8,7 +8,7 @@ import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
 from constants import NaverAPI
-from Article import Article
+from article import Article
 
 naver_client_id = NaverAPI.NAVER_CLIENT_ID
 naver_client_secret = NaverAPI.NAVER_CLIENT_SECRET
