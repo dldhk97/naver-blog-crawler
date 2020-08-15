@@ -8,6 +8,7 @@ import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
 from constants import NaverAPI
+from Article import Article
 
 naver_client_id = NaverAPI.NAVER_CLIENT_ID
 naver_client_secret = NaverAPI.NAVER_CLIENT_SECRET
@@ -49,27 +50,20 @@ def get_blog_search_result_pagination_count(search_blog_keyword, display_count):
 
         return blog_pagination_count
 
-def get_img_src(node):
-    if node.has_attr('data-lazy-src'):
-        return node['data-lazy-src']
-    elif node.has_attr('src'):
-        return node['src']
-    return 'Image parse failed!'
-
 # 게시글 타입별 본문 지정. 본문만 선택할 수 있으면 본문 노드 반환.
 def get_main_content(content):
     main = content.select('div.se-main-container')
     if main:
-        main = main[0]
+        return main[0]
     else:
         main = content.select('div.__se_component_area')
         if main:
-            main = main[0]
+            return main[0]
         else:
-            main = content
-    return main
+            return content
 
-def get_texts(content):
+# 본문 텍스트 추출
+def get_entire_body(content):
     result = str(content.get_text())
 
     # 개행문자 정리함. '\n ' -> '\n'
@@ -78,6 +72,8 @@ def get_texts(content):
     result = re.sub("(\\n){2,}" , "\n", result)
     # 개행문자 정리 3 ' ' 2번이상 반복 -> ' '
     result = re.sub("( ){2,}" , " ", result)
+    # 개행문자 정리 4 특수공백문자 정리
+    result = re.sub('\u200b' , "", result)
 
     return result
 
@@ -87,7 +83,7 @@ def get_images(content):
         result.append(node)
     return result
 
-def get_hrefs(content):
+def get_hyperlinks(content):
     result = []
     for node in content.find_all('a', href=True):
         if node['href'] != '#':
@@ -135,7 +131,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
                     get_blog_post_content_soup = BeautifulSoup(get_blog_post_content_text, 'lxml')
 
-                    for link in get_blog_post_content_soup.select('iframe#mainFrame'):          # 2년 전에는 mainFrame의 태그가 frame이었는듯, 현재 iframe으로 변경됨.
+                    for link in get_blog_post_content_soup.select('iframe#mainFrame'):
                         real_blog_post_url = "http://blog.naver.com" + link.get('src')
 
                         get_real_blog_post_content_code = requests.get(real_blog_post_url)
@@ -145,61 +141,44 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
                         # 2년 전에는 태그ID가 postViewArea인 div 내에 컨텐츠가 있었는데, 
                         # 현재는 태그ID가 post-view + logNo 조합인 div 안에 컨텐츠가 있음.
-                        contentTagID = 'div#postViewArea'
-                        logNo = 'div#postViewArea'
+                        contentTag = 'div#postViewArea'
+                        logNo = ''
                         for s in real_blog_post_url.split('&'):
                             if s.startswith('logNo'):
                                 logNo = s.split('=')[1]
+                                contentTag = 'div#post-view' + logNo
                                 break
                         
-                        contentTagID = 'div#post-view' + logNo
+                        # blogId 구하기(부가적인거라 예외 잡혀도 무관)
+                        blogId = 'Unknown'
+                        try:
+                            for s in real_blog_post_url.split('?'):
+                                if s.startswith('blogId'):
+                                    blogId = s.split('&')[0].split('=')[1]
+                                    break;
+                        except e as Exception:
+                            print(e)
 
-                        print('Debug:url : ' + blog_post_url)
-
-                        for blog_post_content in get_real_blog_post_content_soup.select(contentTagID):
+                        for blog_post_content in get_real_blog_post_content_soup.select(contentTag):
                             main_content = get_main_content(blog_post_content)
 
                             remove_html_tag = re.compile('<.*?>')
 
-                            blog_post_title = re.sub(remove_html_tag, '', response_body_dict['items'][j]['title'])
-                            blog_post_description = re.sub(remove_html_tag, '',
+                            title = re.sub(remove_html_tag, '', response_body_dict['items'][j]['title'])
+                            description = re.sub(remove_html_tag, '',
                                                            response_body_dict['items'][j]['description'])
-                            blog_post_postdate = datetime.datetime.strptime(response_body_dict['items'][j]['postdate'],
+                            date = datetime.datetime.strptime(response_body_dict['items'][j]['postdate'],
                                                                             "%Y%m%d").strftime("%y.%m.%d")
-                            blog_post_blogger_name = response_body_dict['items'][j]['bloggername']
-                            blog_post_full_contents = get_texts(main_content)
+                            blogName = response_body_dict['items'][j]['bloggername']
 
-                            # 이미지 목록 추출
-                            images = get_images(main_content)
+                            body = get_entire_body(main_content)            # 본문 텍스트 추출
+                            images = get_images(main_content)               # 이미지 목록 추출
+                            hyperlinks = get_hyperlinks(main_content)       # 하이퍼링크 목록 추출
+                            videos = get_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
 
-                            # 하이퍼링크 목록 추출
-                            hrefs = get_hrefs(main_content)
+                            currentArticle = Article(blogId, logNo, blog_post_url, title, description, date, blogName, images, hyperlinks, videos, body)
 
-                            # 비디오 목록 추출(미완성)
-                            videos = get_videos(main_content)
-
-                            print("포스팅 URL : " + blog_post_url)
-                            print("포스팅 제목 : " + blog_post_title)
-                            print("포스팅 설명 : " + blog_post_description)
-                            print("포스팅 날짜 : " + blog_post_postdate)
-                            print("블로거 이름 : " + blog_post_blogger_name)
-
-                            if images:
-                                print("이미지 목록 : ")
-                                for image in images:
-                                    print(get_img_src(image))
-
-                            if hrefs:
-                                print("하이퍼링크 목록 : ")
-                                for href in hrefs:
-                                    print(href['href'])
-
-                            if videos:
-                                print("비디오 목록 : ")
-                                for video in videos:
-                                    print(video['src'])
-
-                            print("포스팅 내용 : " + blog_post_full_contents)
+                            print(currentArticle)
                             print("-----------------------------------------------------------------------------------")
                 except Exception as e:
                     print(e)
