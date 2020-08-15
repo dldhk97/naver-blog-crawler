@@ -46,26 +46,26 @@ class Article:
         s += "포스팅 내용 : " + self._body
         return s
     
-    def toCsvStyle(self):
-        s = self._blogId + "\t"
-        s += self._logNo + "\t"
-        s += self._url + "\t"
-        s += self._title + "\t"
-        s += self._description + "\t"
-        s += self._date + "\t"
-        s += self._blogName + "\t"
+    # def toCsvStyle(self):
+    #     s = self._blogId + "\t"
+    #     s += self._logNo + "\t"
+    #     s += self._url + "\t"
+    #     s += self._title + "\t"
+    #     s += self._description + "\t"
+    #     s += self._date + "\t"
+    #     s += self._blogName + "\t"
 
-        if self._images:
-            for image in self._images:
-                 s += image + "\n"
-        s += '\t'
-        if self._hyperlinks:
-            for hyperlink in self._hyperlinks:
-                s += hyperlink + "\n"
-        s += '\t'
-        if self._videos:
-            for video in self._videos:
-                s += video + "\n"
-        s += '\t'
-        s += self._body
-        return s
+    #     if self._images:
+    #         for image in self._images:
+    #              s += image + "\n"
+    #     s += '\t'
+    #     if self._hyperlinks:
+    #         for hyperlink in self._hyperlinks:
+    #             s += hyperlink + "\n"
+    #     s += '\t'
+    #     if self._videos:
+    #         for video in self._videos:
+    #             s += video + "\n"
+    #     s += '\t'
+    #     s += self._body
+    #     return s

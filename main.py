@@ -1,5 +1,6 @@
 import os
 import NaverBlogCrawler
+import csv
 from datetime import datetime
 
 def parse_and_save(search_word, max_count=None):
@@ -7,7 +8,7 @@ def parse_and_save(search_word, max_count=None):
 
     if article_list:
         print("텍스트 파일로 저장합니다")
-        save_as_text(search_word, article_list)
+        save_as_csv(search_word, article_list)
     return
 
 def createDirectory(path):
@@ -19,18 +20,19 @@ def createDirectory(path):
             print("Failed to create directory!!!!!")
             raise
 
-
-def save_as_text(search_word, article_list):
+def save_as_csv(search_word, article_list):
     now = datetime.today().strftime("%Y%m%d%H%M%S")
     save_path = os.getcwd() + '\\crawl\\'
     createDirectory(save_path)
-    file_name = now + '-' + search_word + '.txt'
+    file_name = now + '-' + search_word + '.csv'
 
     try:
         f = open(save_path + file_name, 'w', encoding='utf-8')
+        wr = csv.writer(f)
         for article in article_list:
             try:
-                f.write(article.toCsvStyle())
+                renew_body = article._body.replace('\n','') # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
+                wr.writerow([article._blogId, article._logNo, article._url, article._title, renew_body])
                 print(article._url + ' 저장 완료')
             except Exception as ex:
                 print(ex)
@@ -40,6 +42,7 @@ def save_as_text(search_word, article_list):
         print("Failed to save text file : ")
         print(e)
 
+    return
     
 
 if __name__ == '__main__':
