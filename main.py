@@ -1,5 +1,7 @@
 import NaverBlogCrawler
 
 if __name__ == '__main__':
-    print("2020-08-14 14:39")
-    NaverBlogCrawler.naver_blog_crawling("립버전 다운로드", 100, "sim")
+    article_list = NaverBlogCrawler.naver_blog_crawling("라이젠 4500U", 100, "sim")
+    if article_list:
+        # save as txt
+        print("텍스트 파일로 저장합니다")
