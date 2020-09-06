@@ -6,27 +6,27 @@ import urllib.parse
 from bs4 import BeautifulSoup
 
 class BlogPost:
-    def __init__(self, blogId, logNo, url, title, description, date, blogName, images, hyperlinks, videos, body):
-        self._blogId = blogId
-        self._logNo = logNo
+    def __init__(self, blog_id, log_no, url, title, description, date, blog_name, images, hyperlinks, videos, body):
+        self._blog_id = blog_id
+        self._log_no = log_no
         self._url = url
         self._title = title
         self._description = description
         self._date = date
-        self._blogName = blogName
+        self._blog_name = blog_name
         self._images = images
         self._hyperlinks = hyperlinks
         self._videos = videos
         self._body = body
 
     def __str__(self):
-        s = "Blog ID : " + self._blogId + "\n"
-        s += "logNo : " + self._logNo + "\n"
+        s = "Blog ID : " + self._blog_id + "\n"
+        s += "logNo : " + self._log_no + "\n"
         s += "포스팅 URL : " + self._url + "\n"
         s += "포스팅 제목 : " + self._title + "\n"
         s += "포스팅 설명 : " + self._description + "\n"
         s += "포스팅 날짜 : " + self._date + "\n"
-        s += "블로그 이름 : " + self._blogName + "\n"
+        s += "블로그 이름 : " + self._blog_name + "\n"
 
         if self._images:
             s += "이미지 목록 : "
@@ -45,27 +45,3 @@ class BlogPost:
 
         s += "포스팅 내용 : " + self._body
         return s
-    
-    # def toCsvStyle(self):
-    #     s = self._blogId + "\t"
-    #     s += self._logNo + "\t"
-    #     s += self._url + "\t"
-    #     s += self._title + "\t"
-    #     s += self._description + "\t"
-    #     s += self._date + "\t"
-    #     s += self._blogName + "\t"
-
-    #     if self._images:
-    #         for image in self._images:
-    #              s += image + "\n"
-    #     s += '\t'
-    #     if self._hyperlinks:
-    #         for hyperlink in self._hyperlinks:
-    #             s += hyperlink + "\n"
-    #     s += '\t'
-    #     if self._videos:
-    #         for video in self._videos:
-    #             s += video + "\n"
-    #     s += '\t'
-    #     s += self._body
-    #     return s

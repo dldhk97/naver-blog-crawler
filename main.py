@@ -1,20 +1,20 @@
 import os
-import NaverBlogCrawler
+import naverblogcrawler
 import csv
 from datetime import datetime
 
-# CSV 인코딩 타입. ms949 혹은 utf-8을 쓰시면 됩니다.
+# CSV 인코딩 타입은 ms949 or utf-8
 CSV_ENCODING_TYPE = 'ms949'
 
-def parseAndSave(searchWord, maxCount=None):
-    blogPostList = NaverBlogCrawler.naverBlogCrawling(searchWord, 100, "sim", maxCount)
+def parse_and_save(search_word, max_count=None):
+    article_list = naverblogcrawler.naver_blog_crawling(search_word, 100, "sim", max_count)
 
-    if blogPostList:
+    if article_list:
         print("텍스트 파일로 저장합니다")
-        saveAsCsv(searchWord, blogPostList)
+        save_as_csv(search_word, article_list)
     return
 
-def createDirectory(path):
+def create_directory(path):
     try:
         if not(os.path.isdir(path)):
             os.makedirs(os.path.join(path))
@@ -23,26 +23,25 @@ def createDirectory(path):
             print("Failed to create directory!!!!!")
             raise
 
-def saveAsCsv(searchWord, blogPostList):
-    # 저장할 csv 파일명 설정
+def save_as_csv(search_word, blogpost_list):
     now = datetime.today().strftime("%Y%m%d%H%M%S")
-    savePath = os.getcwd() + '\\crawl\\'
-    createDirectory(savePath)
-    fileName = now + '-' + searchWord + '.csv'
+    save_path = os.getcwd() + '\\crawl\\'
+    create_directory(save_path)
+    file_name = now + '-' + search_word + '.csv'
 
     try:
-        f = open(savePath + fileName, 'w', encoding=CSV_ENCODING_TYPE)
+        f = open(save_path + file_name, 'w', encoding=CSV_ENCODING_TYPE)
         wr = csv.writer(f)
-        for currentBlogPost in blogPostList:
+        for blogpost in blogpost_list:
             try:
-                newlineRemovedBody = currentBlogPost._body.replace('\n',' ') # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
-                imageCnt = len(currentBlogPost._images)
-                hyperlinkCnt = len(currentBlogPost._hyperlinks)
-                videoCnt = len(currentBlogPost._videos)
+                renew_body = blogpost._body.replace('\n',' ')   # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
+                image_count = len(blogpost._images)
+                hyperlink_count = len(blogpost._hyperlinks)
+                video_count = len(blogpost._videos)
 
-                wr.writerow([currentBlogPost._blogId, currentBlogPost._logNo, currentBlogPost._url, currentBlogPost._title, newlineRemovedBody, imageCnt, hyperlinkCnt, videoCnt])
+                wr.writerow([blogpost._blog_id, blogpost._log_no, blogpost._url, blogpost._title, renew_body, image_count, hyperlink_count, video_count])
                 
-                print(currentBlogPost._url + ' 저장 완료')
+                print(blogpost._url + ' 저장 완료')
             except Exception as ex:
                 print(ex)
         print('모든 게시물 저장 성공!')
@@ -55,6 +54,6 @@ def saveAsCsv(searchWord, blogPostList):
     
 
 if __name__ == '__main__':
-    parseAndSave("대구 희망지원금", 10)
-    # parseAndSave("다운로드", 80)
-    # parseAndSave("립버전", 80)
+    parse_and_save("대구희망지원금 신청", 10)
+    # parse_and_save("다운로드", 80)
+    # parse_and_save("립버전", 80)
