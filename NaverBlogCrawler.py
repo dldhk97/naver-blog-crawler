@@ -151,7 +151,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             response_body = response.read()
             response_body_dict = json.loads(response_body.decode('utf-8'))
 
-            blogpost_list = []
+            blog_post_list = []
 
             if max_count is None:
                 max_count = len(response_body_dict['items'])
@@ -196,15 +196,15 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                                                             response_body_dict['items'][j]['description'])
                                 date = datetime.datetime.strptime(response_body_dict['items'][j]['postdate'],
                                                                                 "%Y%m%d").strftime("%y.%m.%d")
-                                blogName = response_body_dict['items'][j]['bloggername']
+                                blog_name = response_body_dict['items'][j]['bloggername']
 
                                 body = get_entire_body(main_content)            # 본문 텍스트 추출
                                 images = get_images(main_content)               # 이미지 목록 추출
                                 hyperlinks = get_hyperlinks(main_content)       # 하이퍼링크 목록 추출
                                 videos = get_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
 
-                                current_blogpost = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blogName, images, hyperlinks, videos, body)
-                                blogpost_list.append(current_blogpost)
+                                current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, images, hyperlinks, videos, body)
+                                blog_post_list.append(current_blog_post)
 
                                 print(blog_post_url + ' 파싱완료 (' + str(j) + '/' + str(max_count) + ')')
                     else:
@@ -216,7 +216,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             
             # 파싱 완료 시 게시물 목록이 있으면 반환
             print("파싱 완료!")
-            if blogpost_list:
-                return blogpost_list
+            if blog_post_list:
+                return blog_post_list
 
     

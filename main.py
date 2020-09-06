@@ -7,11 +7,11 @@ from datetime import datetime
 CSV_ENCODING_TYPE = 'ms949'
 
 def parse_and_save(search_word, max_count=None):
-    blogpost_list = naverblogcrawler.naver_blog_crawling(search_word, 100, "sim", max_count)
+    blog_post_list = naverblogcrawler.naver_blog_crawling(search_word, 100, "sim", max_count)
 
-    if blogpost_list:
+    if blog_post_list:
         print("텍스트 파일로 저장합니다")
-        save_as_csv(search_word, blogpost_list)
+        save_as_csv(search_word, blog_post_list)
     return
 
 def create_directory(path):
@@ -23,7 +23,7 @@ def create_directory(path):
             print("Failed to create directory!!!!!")
             raise
 
-def save_as_csv(search_word, blogpost_list):
+def save_as_csv(search_word, blog_post_list):
     now = datetime.today().strftime("%Y%m%d%H%M%S")
     save_path = os.getcwd() + '\\crawl\\'
     create_directory(save_path)
@@ -32,16 +32,16 @@ def save_as_csv(search_word, blogpost_list):
     try:
         f = open(save_path + file_name, 'w', encoding=CSV_ENCODING_TYPE)
         wr = csv.writer(f)
-        for blogpost in blogpost_list:
+        for blog_post in blog_post_list:
             try:
-                renew_body = blogpost._body.replace('\n',' ')   # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
-                image_count = len(blogpost._images)
-                hyperlink_count = len(blogpost._hyperlinks)
-                video_count = len(blogpost._videos)
+                renew_body = blog_post._body.replace('\n',' ')   # 바디에 개행문자가 있으면 csv파일이 제대로 생성 안됨...
+                image_count = len(blog_post._images)
+                hyperlink_count = len(blog_post._hyperlinks)
+                video_count = len(blog_post._videos)
 
-                wr.writerow([blogpost._blog_id, blogpost._log_no, blogpost._url, blogpost._title, renew_body, image_count, hyperlink_count, video_count])
+                wr.writerow([blog_post._blog_id, blog_post._log_no, blog_post._url, blog_post._title, renew_body, image_count, hyperlink_count, video_count])
                 
-                print(blogpost._url + ' 저장 완료')
+                print(blog_post._url + ' 저장 완료')
             except Exception as ex:
                 print(ex)
         print('모든 게시물 저장 성공!')
