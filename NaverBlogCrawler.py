@@ -60,7 +60,7 @@ def get_main_content(content):
             return content
 
 # 블로그 URL에서 logNo 추출
-def get_logNo(url):
+def get_log_no(url):
     try:
         for s in url.split('&'):
             if s.startswith('logNo'):
@@ -70,7 +70,7 @@ def get_logNo(url):
     return None
 
 # 블로그 URL에서 blogId 추출
-def get_blogId(url):
+def get_blog_id(url):
     for s in url.split('?'):
         if s.startswith('blogId'):
             return s.split('&')[0].split('=')[1]
@@ -151,7 +151,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             response_body = response.read()
             response_body_dict = json.loads(response_body.decode('utf-8'))
 
-            article_list = []
+            blogpost_list = []
 
             if max_count is None:
                 max_count = len(response_body_dict['items'])
@@ -177,16 +177,16 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
                             # 2년 전에는 태그ID가 postViewArea인 div 내에 컨텐츠가 있었는데, 
                             # 현재는 태그ID가 post-view + logNo 조합인 div 안에 컨텐츠가 있음.
-                            logNo = get_logNo(real_blog_post_url)
-                            if logNo:
-                                bodyIdentifier = 'div#post-view' + logNo
+                            log_no = get_log_no(real_blog_post_url)
+                            if log_no:
+                                body_identifier = 'div#post-view' + log_no
                             else:
-                                bodyIdentifier = 'div#postViewArea'
+                                body_identifier = 'div#postViewArea'
                             
                             # blogId 구하기(blogId + logNo로 URL이 없어도 만들어낼 수 있어서 추출하여 저장함)
-                            blogId = get_blogId(real_blog_post_url)
+                            blog_id = get_blog_id(real_blog_post_url)
 
-                            for blog_post_content in get_real_blog_post_content_soup.select(bodyIdentifier):
+                            for blog_post_content in get_real_blog_post_content_soup.select(body_identifier):
                                 main_content = get_main_content(blog_post_content)
 
                                 remove_html_tag = re.compile('<.*?>')
@@ -203,10 +203,9 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                                 hyperlinks = get_hyperlinks(main_content)       # 하이퍼링크 목록 추출
                                 videos = get_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
 
-                                currentArticle = BlogPost(blogId, logNo, blog_post_url, title, description, date, blogName, images, hyperlinks, videos, body)
-                                article_list.append(currentArticle)
+                                current_blogpost = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blogName, images, hyperlinks, videos, body)
+                                blogpost_list.append(current_blogpost)
 
-                                # print(currentArticle)
                                 print(blog_post_url + ' 파싱완료 (' + str(j) + '/' + str(max_count) + ')')
                     else:
                         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
@@ -217,7 +216,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             
             # 파싱 완료 시 게시물 목록이 있으면 반환
             print("파싱 완료!")
-            if article_list:
-                return article_list
+            if blogpost_list:
+                return blogpost_list
 
     

@@ -7,11 +7,11 @@ from datetime import datetime
 CSV_ENCODING_TYPE = 'ms949'
 
 def parse_and_save(search_word, max_count=None):
-    article_list = naverblogcrawler.naver_blog_crawling(search_word, 100, "sim", max_count)
+    blogpost_list = naverblogcrawler.naver_blog_crawling(search_word, 100, "sim", max_count)
 
-    if article_list:
+    if blogpost_list:
         print("텍스트 파일로 저장합니다")
-        save_as_csv(search_word, article_list)
+        save_as_csv(search_word, blogpost_list)
     return
 
 def create_directory(path):
