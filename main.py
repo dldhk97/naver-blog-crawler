@@ -1,5 +1,5 @@
 import os
-import naverBlogCrawler
+import NaverBlogCrawler
 import csv
 from datetime import datetime
 
@@ -7,7 +7,7 @@ from datetime import datetime
 CSV_ENCODING_TYPE = 'ms949'
 
 def parseAndSave(searchWord, maxCount=None):
-    blogPostList = naverBlogCrawler.naverBlogCrawling(searchWord, 100, "sim", maxCount)
+    blogPostList = NaverBlogCrawler.naverBlogCrawling(searchWord, 100, "sim", maxCount)
 
     if blogPostList:
         print("텍스트 파일로 저장합니다")
