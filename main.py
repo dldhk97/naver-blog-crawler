@@ -3,8 +3,8 @@ import naverblogcrawler
 import csv
 from datetime import datetime
 
-# CSV 인코딩 타입은 ms949 or utf-8
-CSV_ENCODING_TYPE = 'ms949'
+# 'UTF-8'이 아닌, 'MS949'로 할 경우 엑셀에서 바로 열 수 있지만, 특정 문자(\u2027)가 포함된 경우 오류가 납니다.
+CSV_ENCODING_TYPE = 'utf-8'
 
 def parse_and_save(search_word, max_count=None):
     blog_post_list = naverblogcrawler.naver_blog_crawling(search_word, 100, "sim", max_count)
