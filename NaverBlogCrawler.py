@@ -8,7 +8,7 @@ import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
 from constants import NaverAPI
-from article import Article
+from blogPost import BlogPost
 
 naver_client_id = NaverAPI.NAVER_CLIENT_ID
 naver_client_secret = NaverAPI.NAVER_CLIENT_SECRET
@@ -154,7 +154,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             response_body = response.read()
             response_body_dict = json.loads(response_body.decode('utf-8'))
 
-            article_list = []
+            blogPostList = []
 
             if max_count is None:
                 max_count = len(response_body_dict['items'])
@@ -206,10 +206,10 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                                 hyperlinks = get_hyperlinks(main_content)       # 하이퍼링크 목록 추출
                                 videos = get_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
 
-                                currentArticle = Article(blogId, logNo, blog_post_url, title, description, date, blogName, images, hyperlinks, videos, body)
-                                article_list.append(currentArticle)
+                                currentBlogPost = BlogPost(blogId, logNo, blog_post_url, title, description, date, blogName, images, hyperlinks, videos, body)
+                                blogPostList.append(currentBlogPost)
 
-                                # print(currentArticle)
+                                # print(currentBlogPost)
                                 print(blog_post_url + ' 파싱완료 (' + str(j) + '/' + str(max_count) + ')')
                     else:
                         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
@@ -220,7 +220,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             
             # 파싱 완료 시 게시물 목록이 있으면 반환
             print("파싱 완료!")
-            if article_list:
-                return article_list
+            if blogPostList:
+                return blogPostList
 
     

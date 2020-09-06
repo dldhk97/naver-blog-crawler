@@ -5,7 +5,7 @@ import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
 
-class Article:
+class BlogPost:
     def __init__(self, blogId, logNo, url, title, description, date, blogName, images, hyperlinks, videos, body):
         self._blogId = blogId
         self._logNo = logNo
