@@ -47,6 +47,14 @@ def get_blog_search_result_pagination_count(search_blog_keyword, display_count):
 
         return blog_pagination_count
 
+# 페이지 제목 추출
+def parse_title_content(content):
+    title = content.find_all('title', limit=1)
+    if title:
+        return title[0].string.replace(' : 네이버 블로그','')
+    else:
+        return content
+
 # 게시글 타입별 본문 지정. 본문만 선택할 수 있으면 본문 노드 반환.
 def parse_main_content(content):
     main = content.select('div.se-main-container')
@@ -89,7 +97,7 @@ def parse_entire_body(content):
     # 개행문자 정리 4 특수공백문자 정리
     result = re.sub('\u200b' , "", result)
 
-    return result
+    return result.strip()
 
 # 노드에 data-lazy-src가 있으면 반환, 없으면 src를 반환
 def parse_img_src(node):
@@ -131,7 +139,7 @@ def parse_videos(content):
             result.append(src)
     return result
 
-# 한 블로그에 대하여 파싱하는 메소드.
+# 한 블로그에 대하여 파싱하는 메소드
 def pasre_blog_post(blog_post_url, api_response_item=None):
     # 네이버 블로그인 경우만 처리함.
     if 'blog.naver.com' in blog_post_url:
@@ -166,18 +174,20 @@ def pasre_blog_post(blog_post_url, api_response_item=None):
 
                 # API를 안거치고 파싱하는경우 제목, 설명, 날짜, 블로그명을 직접 파싱해야함
                 if api_response_item is not None:
-                    title = re.sub(remove_html_tag, '', api_response_item['title'])
+                    # title = re.sub(remove_html_tag, '', api_response_item['title'])
                     description = re.sub(remove_html_tag, '',
                                                 api_response_item['description'])
                     date = datetime.datetime.strptime(api_response_item['postdate'],
                                                                     "%Y%m%d").strftime("%y.%m.%d")
                     blog_name = api_response_item['bloggername']
                 else:
-                    title = 'UNKNOWN'
+                    # 부가 정보들인데 아직 필요없어서 파싱 코드 없음
+                    # title = 'UNKNOWN'
                     description = 'UNKNOWN'
                     date = 'UNKNOWN'
                     blog_name = 'UNKNOWN'
 
+                title = parse_title_content(get_real_blog_post_content_soup)
                 body = parse_entire_body(main_content)            # 본문 텍스트 추출
                 images = parse_images(main_content)               # 이미지 목록 추출
                 hyperlinks = parse_hyperlinks(main_content)       # 하이퍼링크 목록 추출
@@ -210,6 +220,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
             blog_post_list = []
 
+            # 최대 개수가 정해지지 않았다면 모든 검색결과를 크롤링한다
             if max_count is None:
                 max_count = len(response_body_dict['items'])
 
@@ -219,9 +230,10 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
                     blog_post_url = api_response_item['link'].replace("amp;", "")
 
                     current_blog_post = pasre_blog_post(blog_post_url, api_response_item)
-
-                    blog_post_list.append(current_blog_post)
-                    print(blog_post_url + ' 파싱완료 (' + str(j) + '/' + str(max_count) + ')')
+                    
+                    if current_blog_post:
+                        blog_post_list.append(current_blog_post)
+                        print(blog_post_url + ' 파싱완료 (' + str(j) + '/' + str(max_count) + ')')
                 except Exception as e:
                     print('파싱 도중 에러발생 : ')
                     print(e)
