@@ -9,6 +9,8 @@ import urllib.parse
 from bs4 import BeautifulSoup
 from constants import NaverAPI
 from blogpost import BlogPost
+from io import BytesIO            # 이미지 메타데이터 구할때 필요
+from PIL import Image             # 이미지 메타데이터 구할때 필요
 
 
 def naver_blog_crawling(search_blog_keyword, display_count, sort_type, max_count=None):
@@ -107,11 +109,24 @@ def parse_img_src(node):
         return node['src']
     return 'Image parse failed!'
 
+# 이미지 크기 구하기(속도 매우 느려짐)
+def get_image_metadata(src):
+    image_raw = requests.get(src)
+    try:
+        image = Image.open(BytesIO(image_raw.content))
+        width, height = image.size
+        print(width, height)
+    except Exception as e:
+        print(e)
+
 # 이미지 src 목록을 반환
 def parse_images(content):
     result = []
     for node in content.find_all('img'):
         src = parse_img_src(node)
+
+        # get_image_metadata(src)       이미지 크기 구하기(속도 매우 느려짐)
+
         result.append(src)
     return result
 
