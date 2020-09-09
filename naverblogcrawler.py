@@ -6,11 +6,11 @@ import requests
 import urllib.request
 import urllib.error
 import urllib.parse
+import string
 from bs4 import BeautifulSoup
 from constants import NaverAPI
 from blogpost import BlogPost
-from io import BytesIO            # 이미지 메타데이터 구할때 필요
-from PIL import Image             # 이미지 메타데이터 구할때 필요
+from pykospacing import spacing
 
 
 def naver_blog_crawling(search_blog_keyword, display_count, sort_type, max_count=None):
@@ -90,14 +90,11 @@ def parse_blog_id(url):
 def parse_entire_body(content):
     result = str(content.get_text())
 
-    # 개행문자 정리함. '\n ' -> '\n'
-    result = re.sub("(\\n )" , "\n", result)
-    # 개행문자 정리 2 '\n' 2번이상 반복 -> '\n'
-    result = re.sub("(\\n){2,}" , "\n", result)
-    # 개행문자 정리 3 ' ' 2번이상 반복 -> ' '
-    result = re.sub("( ){2,}" , " ", result)
-    # 개행문자 정리 4 특수공백문자 정리
-    result = re.sub('\u200b' , "", result)
+    # 공백 및 개행문자 정리
+    result = re.sub(r'(\s|\u180B|\u200B|\u200C|\u200D|\u2060|\uFEFF)+', '', result)
+
+    # 띄어쓰기 처리
+    result = spacing(result)
 
     return result.strip()
 
@@ -109,24 +106,11 @@ def parse_img_src(node):
         return node['src']
     return 'Image parse failed!'
 
-# 이미지 크기 구하기(속도 매우 느려짐)
-def get_image_metadata(src):
-    image_raw = requests.get(src)
-    try:
-        image = Image.open(BytesIO(image_raw.content))
-        width, height = image.size
-        print(width, height)
-    except Exception as e:
-        print(e)
-
 # 이미지 src 목록을 반환
 def parse_images(content):
     result = []
     for node in content.find_all('img'):
         src = parse_img_src(node)
-
-        # get_image_metadata(src)       이미지 크기 구하기(속도 매우 느려짐)
-
         result.append(src)
     return result
 

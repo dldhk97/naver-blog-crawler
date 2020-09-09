@@ -2,3 +2,6 @@ requests
 beautifulsoup4
 lxml
 image
+tensorflow
+keras
+git+https://github.com/haven-jeon/PyKoSpacing.git
