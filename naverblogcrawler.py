@@ -76,7 +76,7 @@ def parse_tags(blog_id, log_no):
     try:
         url = 'https://blog.naver.com/BlogTagListInfo.nhn?blogId=' + blog_id + '&logNoList=' + log_no
         received_json = requests.get(url).json()                    # Requests로 Json 요청 후 파싱
-        if len(received_json) > 0:
+        if len(received_json) > 0 and len(received_json['taglist']) > 0:
             raw_tag_name = received_json['taglist'][0]['tagName']
             tag_name = urllib.parse.unquote(raw_tag_name)           # URL을 한글로 디코딩
 
@@ -84,11 +84,8 @@ def parse_tags(blog_id, log_no):
             for tag in tag_name.split(','):
                 tag_list.append(tag)
             return tag_list
-        pass
     except Exception as e:
         print('[parse_tags][' + str(blog_id) + '/' + str(log_no) +'] ERROR : ' , e)
-
-    return []
 
 # 블로그 URL에서 logNo 추출
 def parse_log_no(url):

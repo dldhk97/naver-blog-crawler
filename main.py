@@ -49,7 +49,7 @@ def save_as_csv(file_name_header, blog_post_list):
     try:
         f = open(save_path + file_name, 'w', encoding=CSV_ENCODING_TYPE)
         wr = csv.writer(f)
-        wr.writerow(['blog_id', 'log_no', 'url', 'title', 'body', 'image_count', 'hyperlinks', 'vidoe_count', 'tags'])
+        wr.writerow(['blog_id', 'log_no', 'url', 'title', 'body', 'image_count', 'hyperlinks', 'video_count', 'tags'])
         for blog_post in blog_post_list:
             try:
                 if blog_post:
