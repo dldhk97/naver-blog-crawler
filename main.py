@@ -57,14 +57,16 @@ def save_as_csv(file_name_header, blog_post_list):
                     image_count = len(blog_post._images)
 
                     hyperlink_list = ''
-                    for link in blog_post._hyperlinks:
-                        hyperlink_list += link + ', '
+                    if blog_post._hyperlinks:
+                        for link in blog_post._hyperlinks:
+                            hyperlink_list += link + ', '
                     
                     video_count = len(blog_post._videos)
 
                     tag_list = ''
-                    for tag in blog_post._tags:
-                        tag_list += tag + ', '
+                    if blog_post._tags:
+                        for tag in blog_post._tags:
+                            tag_list += tag + ', '
 
                     wr.writerow([blog_post._blog_id, blog_post._log_no, blog_post._url, blog_post._title, renew_body, image_count, hyperlink_list, video_count, tag_list])
                     

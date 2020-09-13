@@ -134,27 +134,33 @@ def parse_images(content):
 
 # 하이퍼링크 목록을 반환
 def parse_hyperlinks(content):
-    result = []
-    for node in content.find_all('a', href=True):
-        if node['href'] != '#':
-            hyperlink = node['href']
-            result.append(hyperlink)
-    return result
+    try:
+        result = []
+        for node in content.find_all('a', href=True):
+            if node['href'] != '#':
+                hyperlink = node['href']
+                result.append(hyperlink)
+        return result
+    except Exception as e:
+        print('[parse_hyperlinks] ERROR : ' , e)
 
 def parse_videos(content):
-    # 유튜브 추출
-    result = []
-    for node in content.find_all('iframe'):
-        if 'www.youtube.com' in node['src']:
-            src = node['src']
-            result.append(src)
+    try:
+        # 유튜브 추출
+        result = []
+        for node in content.find_all('iframe'):
+            if 'www.youtube.com' in node['src']:
+                src = node['src']
+                result.append(src)
 
-    # 네이버 TV or 비디오 추출
-    for node in content.find_all('video'):
-        if node['src']:
-            src = node['src']
-            result.append(src)
-    return result
+        # 네이버 TV or 비디오 추출
+        for node in content.find_all('video'):
+            if node['src']:
+                src = node['src']
+                result.append(src)
+        return result
+    except Exception as e:
+        print('[parse_videos] ERROR : ' , e)
 
 # 한 블로그에 대하여 파싱하는 메소드
 def pasre_blog_post(blog_post_url, api_response_item=None):
