@@ -49,6 +49,8 @@ def get_blog_search_result_pagination_count(search_blog_keyword, display_count):
 
         return blog_pagination_count
 
+# --------------------------------------------------
+
 # 페이지 제목 추출
 def parse_title_content(content):
     title = content.find_all('title', limit=1)
@@ -68,6 +70,25 @@ def parse_main_content(content):
             return main[0]
         else:
             return content
+
+# 페이지 태그 추출
+def parse_tags(blog_id, log_no):
+    try:
+        url = 'https://blog.naver.com/BlogTagListInfo.nhn?blogId=' + blog_id + '&logNoList=' + log_no
+        received_json = requests.get(url).json()                    # Requests로 Json 요청 후 파싱
+        if len(received_json) > 0:
+            raw_tag_name = received_json['taglist'][0]['tagName']
+            tag_name = urllib.parse.unquote(raw_tag_name)           # URL을 한글로 디코딩
+
+            tag_list = []
+            for tag in tag_name.split(','):
+                tag_list.append(tag)
+            return tag_list
+        pass
+    except Exception as e:
+        print('[parse_tags][' + str(blog_id) + '/' + str(log_no) +'] ERROR : ' , e)
+
+    return []
 
 # 블로그 URL에서 logNo 추출
 def parse_log_no(url):
@@ -155,20 +176,18 @@ def pasre_blog_post(blog_post_url, api_response_item=None):
 
             get_real_blog_post_content_soup = BeautifulSoup(get_real_blog_post_content_text, 'lxml')
 
-            # 2년 전에는 태그ID가 postViewArea인 div 내에 컨텐츠가 있었는데, 
-            # 현재는 태그ID가 post-view + logNo 조합인 div 안에 컨텐츠가 있음.
+            # 본문과 태그의 부모 div의 id를 특정함
             log_no = parse_log_no(real_blog_post_url)
             if log_no:
                 body_identifier = 'div#post-view' + log_no
             else:
                 body_identifier = 'div#postViewArea'
             
-            # blogId 구하기(blogId + logNo로 URL이 없어도 만들어낼 수 있어서 추출하여 저장함)
+            # blogId 구하기(blogId + log_no로 URL이 없어도 만들어낼 수 있어서 추출하여 저장함)
             blog_id = parse_blog_id(real_blog_post_url)
 
             for blog_post_content in get_real_blog_post_content_soup.select(body_identifier):
                 main_content = parse_main_content(blog_post_content)
-
                 remove_html_tag = re.compile('<.*?>')
 
                 # API를 안거치고 파싱하는경우 제목, 설명, 날짜, 블로그명을 직접 파싱해야함
@@ -191,8 +210,9 @@ def pasre_blog_post(blog_post_url, api_response_item=None):
                 images = parse_images(main_content)               # 이미지 목록 추출
                 hyperlinks = parse_hyperlinks(main_content)       # 하이퍼링크 목록 추출
                 videos = parse_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
+                tags = parse_tags(blog_id, log_no)                # 태그 추출(태그는 레이지로딩인거같아 파싱 불가. Json으로 따로 추출)
 
-                current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, images, hyperlinks, videos, body)
+                current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, images, hyperlinks, videos, tags, body)
                 return current_blog_post
     else:
         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
