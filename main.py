@@ -42,7 +42,7 @@ def create_directory(path):
 # 파일명과 BlogPost 배열을 주면 csv파일로 저장하는 메소드
 def save_as_csv(file_name_header, blog_post_list):
     now = datetime.today().strftime("%Y%m%d%H%M%S")
-    save_path = os.getcwd() + '\\crawl\\'
+    save_path = os.getcwd() + os.sep + 'crawl' + os.sep
     create_directory(save_path)
     file_name = now + '-' + file_name_header + '.csv'
 
