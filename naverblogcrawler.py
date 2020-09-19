@@ -116,21 +116,6 @@ def parse_entire_body(content):
 
     return result.strip()
 
-# 노드에 data-lazy-src가 있으면 반환, 없으면 src를 반환
-def parse_img_src(node):
-    if node.has_attr('data-lazy-src'):
-        return node['data-lazy-src']
-    elif node.has_attr('src'):
-        return node['src']
-    return 'Image parse failed!'
-
-# 이미지 src 목록을 반환
-def parse_images(content):
-    result = []
-    for node in content.find_all('img'):
-        src = parse_img_src(node)
-        result.append(src)
-    return result
 
 # 하이퍼링크 목록을 반환
 def parse_hyperlinks(content):
@@ -144,79 +129,79 @@ def parse_hyperlinks(content):
     except Exception as e:
         print('[parse_hyperlinks] ERROR : ' , e)
 
-def parse_videos(content):
-    try:
-        # 유튜브 추출
-        result = []
-        for node in content.find_all('iframe'):
-            if 'www.youtube.com' in node['src']:
-                src = node['src']
-                result.append(src)
 
-        # 네이버 TV or 비디오 추출
-        for node in content.find_all('video'):
-            if node['src']:
-                src = node['src']
-                result.append(src)
-        return result
-    except Exception as e:
-        print('[parse_videos] ERROR : ' , e)
+# 일반 url을 주면 blogId, logNo가 포함된 자세한 URL을 반환
+def parse_real_blog_post_url(blog_post_url):
+    get_blog_post_content_code = requests.get(blog_post_url)
+    get_blog_post_content_text = get_blog_post_content_code.text
+
+    get_blog_post_content_soup = BeautifulSoup(get_blog_post_content_text, 'lxml')
+
+    for link in get_blog_post_content_soup.select('iframe#mainFrame'):
+        real_blog_post_url = "http://blog.naver.com" + link.get('src')
+        return real_blog_post_url
+
+    # 이미 리얼 블로그 url인 경우 그대로 반환
+    return blog_post_url
+
+# 리얼 URL을 주면 전체 html 반환
+def parse_entire_blog_post(real_blog_post_url):
+    get_real_blog_post_content_code = requests.get(real_blog_post_url)
+    get_real_blog_post_content_text = get_real_blog_post_content_code.text
+
+    get_real_blog_post_content_soup = BeautifulSoup(get_real_blog_post_content_text, 'lxml')
+    return get_real_blog_post_content_soup
+
+# log_no를 주면 본문 식별자 반환
+def parse_body_identifier(log_no):
+    if log_no:
+        body_identifier = 'div#post-view' + log_no
+    else:
+        body_identifier = 'div#postViewArea'
+    return body_identifier
 
 # 한 블로그에 대하여 파싱하는 메소드
 def pasre_blog_post(blog_post_url, api_response_item=None):
     # 네이버 블로그인 경우만 처리함.
     if 'blog.naver.com' in blog_post_url:
-        get_blog_post_content_code = requests.get(blog_post_url)
-        get_blog_post_content_text = get_blog_post_content_code.text
 
-        get_blog_post_content_soup = BeautifulSoup(get_blog_post_content_text, 'lxml')
+        real_blog_post_url = parse_real_blog_post_url(blog_post_url)
 
-        for link in get_blog_post_content_soup.select('iframe#mainFrame'):
-            real_blog_post_url = "http://blog.naver.com" + link.get('src')
+        get_real_blog_post_content_soup = parse_entire_blog_post(real_blog_post_url)
 
-            get_real_blog_post_content_code = requests.get(real_blog_post_url)
-            get_real_blog_post_content_text = get_real_blog_post_content_code.text
+        # 본문과 태그의 부모 div의 id를 특정함
+        log_no = parse_log_no(real_blog_post_url)
+        body_identifier = parse_body_identifier(log_no)
+        
+        # blogId 구하기(blogId + log_no로 URL이 없어도 만들어낼 수 있어서 추출하여 저장함)
+        blog_id = parse_blog_id(real_blog_post_url)
 
-            get_real_blog_post_content_soup = BeautifulSoup(get_real_blog_post_content_text, 'lxml')
+        for blog_post_content in get_real_blog_post_content_soup.select(body_identifier):
+            main_content = parse_main_content(blog_post_content)
+            remove_html_tag = re.compile('<.*?>')
 
-            # 본문과 태그의 부모 div의 id를 특정함
-            log_no = parse_log_no(real_blog_post_url)
-            if log_no:
-                body_identifier = 'div#post-view' + log_no
+            # API를 안거치고 파싱하는경우 제목, 설명, 날짜, 블로그명을 직접 파싱해야함
+            if api_response_item is not None:
+                description = re.sub(remove_html_tag, '',
+                                            api_response_item['description'])
+                date = datetime.datetime.strptime(api_response_item['postdate'],
+                                                                "%Y%m%d").strftime("%y.%m.%d")
+                blog_name = api_response_item['bloggername']
             else:
-                body_identifier = 'div#postViewArea'
-            
-            # blogId 구하기(blogId + log_no로 URL이 없어도 만들어낼 수 있어서 추출하여 저장함)
-            blog_id = parse_blog_id(real_blog_post_url)
+                # 부가 정보들인데 아직 필요없어서 파싱 코드 없음
+                description = 'UNKNOWN'
+                date = 'UNKNOWN'
+                blog_name = 'UNKNOWN'
 
-            for blog_post_content in get_real_blog_post_content_soup.select(body_identifier):
-                main_content = parse_main_content(blog_post_content)
-                remove_html_tag = re.compile('<.*?>')
+            title = parse_title_content(get_real_blog_post_content_soup)
+            body = parse_entire_body(main_content)            # 본문 텍스트 추출
+            # images = parse_images(main_content)               # 이미지 목록 추출
+            hyperlinks = parse_hyperlinks(main_content)       # 하이퍼링크 목록 추출
+            # videos = parse_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
+            tags = parse_tags(blog_id, log_no)                # 태그 추출(태그는 레이지로딩인거같아 파싱 불가. Json으로 따로 추출)
 
-                # API를 안거치고 파싱하는경우 제목, 설명, 날짜, 블로그명을 직접 파싱해야함
-                if api_response_item is not None:
-                    # title = re.sub(remove_html_tag, '', api_response_item['title'])
-                    description = re.sub(remove_html_tag, '',
-                                                api_response_item['description'])
-                    date = datetime.datetime.strptime(api_response_item['postdate'],
-                                                                    "%Y%m%d").strftime("%y.%m.%d")
-                    blog_name = api_response_item['bloggername']
-                else:
-                    # 부가 정보들인데 아직 필요없어서 파싱 코드 없음
-                    # title = 'UNKNOWN'
-                    description = 'UNKNOWN'
-                    date = 'UNKNOWN'
-                    blog_name = 'UNKNOWN'
-
-                title = parse_title_content(get_real_blog_post_content_soup)
-                body = parse_entire_body(main_content)            # 본문 텍스트 추출
-                images = parse_images(main_content)               # 이미지 목록 추출
-                hyperlinks = parse_hyperlinks(main_content)       # 하이퍼링크 목록 추출
-                videos = parse_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
-                tags = parse_tags(blog_id, log_no)                # 태그 추출(태그는 레이지로딩인거같아 파싱 불가. Json으로 따로 추출)
-
-                current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, images, hyperlinks, videos, tags, body)
-                return current_blog_post
+            current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, images, hyperlinks, videos, tags, body)
+            return current_blog_post
     else:
         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
 

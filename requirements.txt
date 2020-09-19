@@ -4,4 +4,5 @@ lxml
 image
 tensorflow
 keras
+selenium
 git+https://github.com/haven-jeon/PyKoSpacing.git
