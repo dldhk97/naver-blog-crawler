@@ -6,7 +6,7 @@ import urllib.parse
 from bs4 import BeautifulSoup
 
 class BlogPost:
-    def __init__(self, blog_id, log_no, url, title, description, date, blog_name, images, hyperlinks, videos, tags, body):
+    def __init__(self, blog_id, log_no, url, title, description, date, blog_name, hyperlinks, tags, body):
         self._blog_id = blog_id
         self._log_no = log_no
         self._url = url
@@ -14,9 +14,7 @@ class BlogPost:
         self._description = description
         self._date = date
         self._blog_name = blog_name
-        self._images = images
         self._hyperlinks = hyperlinks
-        self._videos = videos
         self._tags = tags
         self._body = body
 
@@ -29,20 +27,10 @@ class BlogPost:
         s += "포스팅 날짜 : " + self._date + "\n"
         s += "블로그 이름 : " + self._blog_name + "\n"
 
-        if self._images:
-            s += "이미지 목록 : "
-            for image in self._images:
-                 s += image + "\n"
-
         if self._hyperlinks:
             s += "하이퍼링크 목록 : "
             for hyperlink in self._hyperlinks:
                 s += hyperlink + "\n"
-
-        if self._videos:
-            s += "비디오 목록 : "
-            for video in self._videos:
-                s += video + "\n"
 
         if self._tags:
             s += "태그 목록 : "

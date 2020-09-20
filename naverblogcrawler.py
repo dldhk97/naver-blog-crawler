@@ -200,7 +200,7 @@ def pasre_blog_post(blog_post_url, api_response_item=None):
             # videos = parse_videos(main_content)               # 비디오 목록 추출(유튜브 or 네이버TV)
             tags = parse_tags(blog_id, log_no)                # 태그 추출(태그는 레이지로딩인거같아 파싱 불가. Json으로 따로 추출)
 
-            current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, images, hyperlinks, videos, tags, body)
+            current_blog_post = BlogPost(blog_id, log_no, blog_post_url, title, description, date, blog_name, hyperlinks, tags, body)
             return current_blog_post
     else:
         print(blog_post_url + ' 는 네이버 블로그가 아니라 패스합니다')
