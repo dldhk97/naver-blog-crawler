@@ -14,7 +14,7 @@ def prepare_selenium():
     # options.add_argument('headless')
 
     driver_name = None
-    if platform.system() is 'Linux':
+    if platform.system() == 'Linux':
         print('Platform is Linux')
         driver_name = 'chromedriver85_linux'
     else:
