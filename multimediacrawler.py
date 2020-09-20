@@ -13,7 +13,7 @@ def prepare_selenium():
     global driver
     options = webdriver.ChromeOptions()
     # options.add_argument('headless')
-    driver = webdriver.Chrome(driver_path, chrome_options=options)
+    driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
     driver.implicitly_wait(3)
 
 # 이미지 목록과 이모티콘 목록을 반환
