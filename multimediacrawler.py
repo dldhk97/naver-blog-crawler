@@ -1,4 +1,4 @@
-import os
+import os, platform
 import string
 from selenium import webdriver
 from bs4 import BeautifulSoup
@@ -6,14 +6,27 @@ from naverblogcrawler import parse_log_no, parse_blog_id, parse_main_content, pa
 from multimedia import MultiMedia
 
 # 설치되어있는 크롬의 버전에 맞는 드라이버를 사용하십시오.
-driver_path = os.getcwd() + os.sep + 'bin' + os.sep + 'chromedriver85.exe'
 driver = None
 
 def prepare_selenium():
     global driver
     options = webdriver.ChromeOptions()
     # options.add_argument('headless')
+
+    driver_name = None
+    if platform.system() is 'Linux':
+        print('Platform is Linux')
+        driver_name = 'chromedriver85_linux'
+    else:
+        print('Platform is Windows')
+        driver_name = 'chromedriver85_win.exe'
+    
+    driver_path = os.getcwd() + os.sep + 'bin' + os.sep + driver_name
+
+    print('Using this driver : ' + driver_path)
+
     driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
+    
     driver.implicitly_wait(3)
 
 # 이미지 목록과 이모티콘 목록을 반환
